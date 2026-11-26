@@ -19,6 +19,24 @@ RSpec.describe "bundle install with git sources" do
       expect(out).to eq("LOCAL")
     end
 
+    it "resolves a relative local override from the Gemfile directory" do
+      build_git "myrack", "0.8", path: lib_path("local-myrack") do |s|
+        s.write "lib/myrack.rb", "puts :LOCAL"
+      end
+
+      gemfile <<-G
+        source "https://gem.repo1"
+        gem "myrack", :git => "#{lib_path("myrack-0.8")}", :branch => "main"
+      G
+
+      dir = bundled_app("subdir").mkpath
+      env = { "BUNDLE_LOCAL__MYRACK" => lib_path("local-myrack").relative_path_from(bundled_app).to_s }
+
+      bundle :install, dir: dir, env: env
+      run "require 'myrack'", dir: dir, env: env
+      expect(out).to eq("LOCAL")
+    end
+
     it "chooses the local repository on runtime" do
       build_git "myrack", "0.8"
 

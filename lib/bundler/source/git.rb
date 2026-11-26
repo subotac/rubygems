@@ -153,8 +153,7 @@ module Bundler
         return false if local?
 
         original_path = path
-        path = Pathname.new(path)
-        path = path.expand_path(Bundler.root) unless path.relative?
+        path = Pathname.new(path).expand_path(Bundler.root)
 
         unless branch || Bundler.settings[:disable_local_branch_check]
           raise GitError, "Cannot use local override for #{name} at #{path} because " \
